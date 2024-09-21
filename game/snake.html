@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title></title>
+  <title>Snake Game with Firebase</title>
   <style>
   html, body {
     height: 100%;
@@ -18,163 +18,185 @@
     border: 2px solid white;
   }
   </style>
+  <!-- Include Firebase libraries -->
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js"></script>
 </head>
 <body>
 <canvas width="800" height="800" id="game"></canvas>
 <script>
-var canvas = document.getElementById('game');
-var context = canvas.getContext('2d');
-
-var grid = 16;
-var count = 0;
-var score ={
-  x: 0,
-  y: 0,
-  value:count
-};
-
-//generate session grid
-
-var snake = {
-  x: 160,
-  y: 160,
-  
-  // snake velocity. moves one grid length every frame in either the x or y direction
-  dx: grid,
-  dy: 0,
-  
-  // keep track of all grids the snake body occupies
-  cells: [],
-  
-  // length of the snake. grows when eating an apple
-  maxCells: 4
-};
-var apple = {
-  x: 320,
-  y: 320
-};
-
-// get random whole numbers in a specific range
-// @see https://stackoverflow.com/a/1527820/2124254
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
-}
-
-// game loop
-function loop() {
-  requestAnimationFrame(loop);
-
-  // slow game loop to 15 fps instead of 60 (60/15 = 4)
-  if (++count < 4) {
-    return;
+  // Firebase configuration (replace with your own config)
+  var firebaseConfig = {
+    type: "service_account",
+    project_id: "snakegame-9d3c9",
+    private_key_id: "03e6210e2c5ec31b70110becf8a51e0bfac65d83",
+    private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC1WR5eNV1pgTSE\n9v8GTh7Ev921JNPzE0uGTMMY4DmuDZik/MwaX9FU6xKrIcmBJmC1KLzgFBXB0+sV\nWczCmyKkjyQAOme9eZF87wf9n9DRQrzKpHVubfNDNUQ17YXFnysjK+xYjoQZJz59\nLPLj99vEM1fnPUcUBvl+hKfU5bb8iHCFOjv5+cJ0x5MTM4rd9hdcgs3+OofOwmDj\neX2dsuzRw61eL6TZ4UkK2h/n5OIBe/nMaQ2FLMr4j3EnpMnH7YZjY/TIfE1x7FRf\nwbjul4l0KJWmyWm6T1f5gruUysrlXKUh7KlLW/myyd41aUcSwyHsjUNK7YbrWIf3\nCKLVWkyPAgMBAAECggEARzL6l81G5A3c01lwLgcM0H1t69lON7C7JbrMnF8odjwT\nUq+H6ND2zGrQtQy6YvDw5h9c7HMmSafMs+DCYiNregVTAp3rrfnlU5I7ZmnRH9+e\nZMcl7dnQOPJYWf3r1/eShagQjoJBvehpAddcc4GUMJdh60FlPykv2mr1w8H+0m2K\nj177aeEPVGqvQU1Na1qze7cVeC97WMCPga2NG256mXaiS1HHaa9YOOqZr71KfCLA\nQrMUdMZhhikH4J8WVDl/PJCfyfseMHDkojEYEGmrBwIEVe9DcJ9XaEA/Rvs/soq0\nbnAc9d/7kft0qq0f18SgLkzIfFuHYzTwXvc9Nc4ZfQKBgQD0Mwxl+23gYhzBOuIt\nDWHqMZk4oDia3v66v549Orj6xfv0lPI6leM6ZOMt8wIHAshRY4EvUouBofe/ukKc\n4mmzh8Zx6w3L5cI9ndmxmJ+pAzLF+dYvXzlye0DvksNypncO5fRyKG35Odd16ltt\nH/lqx0E3c5lSq8fvl7fBtC5TvQKBgQC+HIwJsTIsXpH4PAOYf8EvAlLcJhFzeTHR\n3WKWuMDTjAyIkT6fIu2qrOGStClMkloM+P9vrr50bZ1ZT1jS09tQJMJBXigJ3zrq\n2G8qzhBRVsc5q7XfOftByCTRwFkmoXXaCYV01kfvF2Ye/E16EXeFGf66QCoTjr4x\nJkQCHbEAOwKBgCclj9VBaynPUKDBWcSzIoEylkd3l9tr6BXz5eAW69R3rJ5WykYO\nBTE1Px38mNSa45X4h5sYdni/iEHaEBeqTBuVpoBYmAuZt3u9NEq+Fso3UwpdtLI/\nZ6wsigpd0qsseGWRA5DRXl/Xn+ytNx7VQ1yUuKW1CF0yYIjOH40T32FZAoGAaw4W\nScrvzw5+MoRRHgorFja/xFrnjtgbluuM/gUSCM6frDPmSKTZozfxWrR7YTQ044NA\nDHshotyrM8S75xUINixM+5RzBYQgYGj6yOb7R2KPk8k/BHJZK+Tx3u/rBBb+D4c3\nEOEt5tSNXDuFwYyeemR2Dhnd19+U+IZs26guqUsCgYAM2eux7HWFeDwqUrPR4Cnx\nORom1FuppDfUPagnnEGFmTOuULp5F298VJ2u1yLuecNUzcnvscQglSlkLcap0IuA\nco3WrfFk6ogQHlDjMlbQkYogu5obVN6fI6Pk60cpMFGts3MtCIwH6jEh7q8vhEpx\ntJVoaiA870/ucQoWTUP6Ww==\n-----END PRIVATE KEY-----\n",
+    client_email: "firebase-adminsdk-1zzd0@snakegame-9d3c9.iam.gserviceaccount.com",
+    client_id: "101146277122833146744",
+    auth_uri: "https://accounts.google.com/o/oauth2/auth",
+    token_uri: "https://oauth2.googleapis.com/token",
+    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+    client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-1zzd0%40snakegame-9d3c9.iam.gserviceaccount.com",
+    universe_domain: "googleapis.com"
   }
 
-  count = 0;
-  context.clearRect(0,0,canvas.width,canvas.height);
 
-  // move snake by it's velocity
-  snake.x += snake.dx;
-  snake.y += snake.dy;
 
-  // wrap snake position horizontally on edge of screen
-  if (snake.x < 0) {
-    snake.x = canvas.width - grid;
+
+
+  // Initialize Firebase
+  var app = firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore(app);
+
+  var canvas = document.getElementById('game');
+  var context = canvas.getContext('2d');
+
+  var grid = 16;
+  var count = 0;
+  var score = {
+    x: 0,
+    y: 0,
+    value: 0
+  };
+  var highestScore = 0;
+
+  // Fetch highest score from Firebase on page load
+  db.collection("scores").doc("highest").get().then(function(doc) {
+    if (doc.exists) {
+      highestScore = doc.data().value;
+      updateHighestScore();
+    }
+  }).catch(function(error) {
+    console.log("Error getting document:", error);
+  });
+
+  // Function to update highest score display
+  function updateHighestScore() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = 'white';
+    context.font = '20px Arial';
+    context.fillText('Highest Score: ' + highestScore, 10, 50);
   }
-  else if (snake.x >= canvas.width) {
-    snake.x = 0;
+
+  var snake = {
+    x: 160,
+    y: 160,
+    dx: grid,
+    dy: 0,
+    cells: [],
+    maxCells: 4
+  };
+
+  var apple = {
+    x: 320,
+    y: 320
+  };
+
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
   }
-  
-  // wrap snake position vertically on edge of screen
-  if (snake.y < 0) {
-    snake.y = canvas.height - grid;
-  }
-  else if (snake.y >= canvas.height) {
-    snake.y = 0;
-  }
 
-  // keep track of where snake has been. front of the array is always the head
-  snake.cells.unshift({x: snake.x, y: snake.y});
+  function loop() {
+    requestAnimationFrame(loop);
 
-  // remove cells as we move away from them
-  if (snake.cells.length > snake.maxCells) {
-    snake.cells.pop();
-  }
-
-  // draw apple
-  context.fillStyle = 'red';
-  context.fillRect(apple.x, apple.y, grid-1, grid-1);
-  // draw score
-  context.fillStyle = 'white';
-  context.font = '30px Arial';
-  context.fillText('Score: '+score.value, 10, 30);
-
-  // draw snake one cell at a time
-  context.fillStyle = 'green';
-  snake.cells.forEach(function(cell, index) {
-    
-    // drawing 1 px smaller than the grid creates a grid effect in the snake body so you can see how long it is
-    context.fillRect(cell.x, cell.y, grid-1, grid-1);  
-
-    // snake ate apple
-    if (cell.x === apple.x && cell.y === apple.y) {
-      snake.maxCells++;
-      score.value++;
-
-      // canvas is 400x400 which is 25x25 grids 
-      apple.x = getRandomInt(0, 25) * grid;
-      apple.y = getRandomInt(0, 25) * grid;
+    if (++count < 4) {
+      return;
     }
 
-    // check collision with all cells after this one (modified bubble sort)
-    for (var i = index + 1; i < snake.cells.length; i++) {
-      
-      // snake occupies same space as a body part. reset game
-      if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
-        snake.x = 160;
-        snake.y = 160;
-        snake.cells = [];
-        snake.maxCells = 4;
-        snake.dx = grid;
-        snake.dy = 0;
+    count = 0;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    snake.x += snake.dx;
+    snake.y += snake.dy;
+
+    if (snake.x < 0) {
+      snake.x = canvas.width - grid;
+    }
+    else if (snake.x >= canvas.width) {
+      snake.x = 0;
+    }
+
+    if (snake.y < 0) {
+      snake.y = canvas.height - grid;
+    }
+    else if (snake.y >= canvas.height) {
+      snake.y = 0;
+    }
+
+    snake.cells.unshift({ x: snake.x, y: snake.y });
+
+    if (snake.cells.length > snake.maxCells) {
+      snake.cells.pop();
+    }
+
+    context.fillStyle = 'red';
+    context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+
+    context.fillStyle = 'white';
+    context.font = '30px Arial';
+    context.fillText('Score: ' + score.value, 10, 30);
+    updateHighestScore();
+
+    context.fillStyle = 'green';
+    snake.cells.forEach(function(cell, index) {
+      context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+
+      if (cell.x === apple.x && cell.y === apple.y) {
+        snake.maxCells++;
+        score.value++;
+
+        if (score.value > highestScore) {
+          highestScore = score.value;
+          db.collection("scores").doc("highest").set({ value: highestScore });
+        }
 
         apple.x = getRandomInt(0, 25) * grid;
         apple.y = getRandomInt(0, 25) * grid;
       }
+
+      for (var i = index + 1; i < snake.cells.length; i++) {
+        if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+          snake.x = 160;
+          snake.y = 160;
+          snake.cells = [];
+          snake.maxCells = 4;
+          snake.dx = grid;
+          snake.dy = 0;
+
+          apple.x = getRandomInt(0, 25) * grid;
+          apple.y = getRandomInt(0, 25) * grid;
+
+          if (score.value > highestScore) {
+            highestScore = score.value;
+            db.collection("scores").doc("highest").set({ value: highestScore });
+          }
+
+          score.value = 0;
+        }
+      }
+    });
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.which === 37 && snake.dx === 0) {
+      snake.dx = -grid;
+      snake.dy = 0;
+    }
+    else if (e.which === 38 && snake.dy === 0) {
+      snake.dy = -grid;
+      snake.dx = 0;
+    }
+    else if (e.which === 39 && snake.dx === 0) {
+      snake.dx = grid;
+      snake.dy = 0;
+    }
+    else if (e.which === 40 && snake.dy === 0) {
+      snake.dy = grid;
+      snake.dx = 0;
     }
   });
-}
 
-// listen to keyboard events to move the snake
-document.addEventListener('keydown', function(e) {
-  // prevent snake from backtracking on itself by checking that it's 
-  // not already moving on the same axis (pressing left while moving
-  // left won't do anything, and pressing right while moving left
-  // shouldn't let you collide with your own body)
-  
-  // left arrow key
-  if (e.which === 37 && snake.dx === 0) {
-    snake.dx = -grid;
-    snake.dy = 0;
-  }
-  // up arrow key
-  else if (e.which === 38 && snake.dy === 0) {
-    snake.dy = -grid;
-    snake.dx = 0;
-  }
-  // right arrow key
-  else if (e.which === 39 && snake.dx === 0) {
-    snake.dx = grid;
-    snake.dy = 0;
-  }
-  // down arrow key
-  else if (e.which === 40 && snake.dy === 0) {
-    snake.dy = grid;
-    snake.dx = 0;
-  }
-});
-
-// start the game
-requestAnimationFrame(loop);
+  requestAnimationFrame(loop);
 </script>
 </body>
 </html>
