@@ -32,6 +32,9 @@ var score ={
   y: 0,
   value:count
 };
+
+//generate session grid
+
 var snake = {
   x: 160,
   y: 160,
@@ -103,7 +106,7 @@ function loop() {
   // draw score
   context.fillStyle = 'white';
   context.font = '30px Arial';
-  context.fillText('Score: '+score.value, score.x, score.y);
+  context.fillText('Score: '+score.value, 10, 30);
 
   // draw snake one cell at a time
   context.fillStyle = 'green';
@@ -115,6 +118,7 @@ function loop() {
     // snake ate apple
     if (cell.x === apple.x && cell.y === apple.y) {
       snake.maxCells++;
+      score.value++;
 
       // canvas is 400x400 which is 25x25 grids 
       apple.x = getRandomInt(0, 25) * grid;
