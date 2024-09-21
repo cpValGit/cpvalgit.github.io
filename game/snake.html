@@ -15,12 +15,12 @@
     justify-content: center;
   }
   canvas {
-    border: 1px solid white;
+    border: 2px solid white;
   }
   </style>
 </head>
 <body>
-<canvas width="400" height="400" id="game"></canvas>
+<canvas width="800" height="800" id="game"></canvas>
 <script>
 var canvas = document.getElementById('game');
 var context = canvas.getContext('2d');
@@ -29,8 +29,8 @@ var grid = 16;
 var count = 0;
   
 var snake = {
-  x: 260,
-  y: 260,
+  x: 160,
+  y: 160,
   
   // snake velocity. moves one grid length every frame in either the x or y direction
   dx: grid,
