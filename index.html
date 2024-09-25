@@ -1,1 +1,89 @@
-Hello World!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Counter Button</title>
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script> <!-- for Realtime Database -->
+  <!-- or -->
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"></script> <!-- for Firestore -->
+</head>
+<body>
+
+  <script>
+  // Your Firebase config
+
+
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCv3qRPUCH3_7TsIy0Z31zmZbi5PiPlSmU",
+  authDomain: "light-sensor-dd56a.firebaseapp.com",
+  projectId: "light-sensor-dd56a",
+  storageBucket: "light-sensor-dd56a.appspot.com",
+  messagingSenderId: "290548111101",
+  appId: "1:290548111101:web:f0d2578b77916d89c39094",
+  measurementId: "G-22VTP2SMKY"
+};
+
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const database = firebase.database(); // for Realtime Database
+  // or for Firestore
+  // const db = firebase.firestore();
+</script>
+
+  <h1>Counter: <span id="counterValue">0</span></h1>
+  <button id="incrementButton">Increment</button>
+
+
+  <script>
+  const counterDisplay = document.getElementById('counterValue');
+  const incrementButton = document.getElementById('incrementButton');
+  let count = 0;
+
+  // Function to update counter value in Firebase
+  function updateCounterInFirebase(newValue) {
+    const ref = database.ref('counter'); // Reference to 'counter' in Realtime Database
+    ref.set(newValue); // Set new value in Firebase
+
+    // If using Firestore, you'd use:
+    // db.collection('counter').doc('counterValue').set({ value: newValue });
+  }
+
+  // Load current counter value from Firebase when page loads
+  function loadCounterFromFirebase() {
+    const ref = database.ref('counter');
+    ref.once('value').then(snapshot => {
+      const value = snapshot.val();
+      if (value !== null) {
+        count = value;
+        counterDisplay.textContent = count;
+      }
+    });
+
+    // For Firestore:
+    // db.collection('counter').doc('counterValue').get().then((doc) => {
+    //   if (doc.exists) {
+    //     count = doc.data().value;
+    //     counterDisplay.textContent = count;
+    //   }
+    // });
+  }
+
+  // Increment counter and save to Firebase
+  incrementButton.addEventListener('click', () => {
+    count++;
+    counterDisplay.textContent = count;
+    updateCounterInFirebase(count);
+  });
+
+  // Load counter value on page load
+  loadCounterFromFirebase();
+</script>
+
+  
