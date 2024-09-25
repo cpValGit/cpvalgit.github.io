@@ -65,7 +65,12 @@
     // });
 
     // For Firestore:
-    counterRef.update({counter: count });
+    counterRef.get().then((doc) => {
+       if (doc.exists) {
+         count = doc.data().value;
+         counterDisplay.textContent = count;
+       }
+     });
     // db.collection('counter').doc('counterValue').get().then((doc) => {
     //   if (doc.exists) {
     //     count = doc.data().value;
