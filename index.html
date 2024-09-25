@@ -22,12 +22,11 @@
     firebase.initializeApp(firebaseConfig);
 
     const db = firebase.firestore();
-    const usersRef = db.collection('users');
+    const counterRef = db.collection('counter');
 
     // Add a new document
-    usersRef.add({
-      name: 'John Doe',
-      email: 'john.doe@example.com'
+    counterRef.add({
+      counter: '0'
     })
     .then(docRef => {
       console.log("Document written with ID: ", docRef.id);
@@ -35,6 +34,55 @@
     .catch(error => {
       console.error("Error adding document: ", error);
     });
+ <script>
+  
+   <h1>Counter: <span id="counterValue">0</span></h1>
+   <button id="incrementButton">Increment</button>
+
+  <script>
+  const counterDisplay = document.getElementById('counterValue');
+  const incrementButton = document.getElementById('incrementButton');
+  let count = 0;
+
+  // Function to update counter value in Firebase
+  function updateCounterInFirebase(newValue) {
+    const ref = database.ref('counter'); // Reference to 'counter' in Realtime Database
+    ref.set(newValue); // Set new value in Firebase
+
+    // If using Firestore, you'd use:
+    // db.collection('counter').doc('counterValue').set({ value: newValue });
+  }
+
+  // Load current counter value from Firebase when page loads
+  function loadCounterFromFirebase() {
+    const ref = database.ref('counter');
+    ref.once('value').then(snapshot => {
+      const value = snapshot.val();
+      if (value !== null) {
+        count = value;
+        counterDisplay.textContent = count;
+      }
+    });
+
+    // For Firestore:
+    // db.collection('counter').doc('counterValue').get().then((doc) => {
+    //   if (doc.exists) {
+    //     count = doc.data().value;
+    //     counterDisplay.textContent = count;
+    //   }
+    // });
+  }
+
+  // Increment counter and save to Firebase
+  incrementButton.addEventListener('click', () => {
+    count++;
+    counterDisplay.textContent = count;
+    updateCounterInFirebase(count);
+  });
+
+  // Load counter value on page load
+  loadCounterFromFirebase();
+</script>
 
 
   
