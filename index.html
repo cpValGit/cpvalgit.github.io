@@ -55,16 +55,17 @@
 
   // Load current counter value from Firebase when page loads
   function loadCounterFromFirebase() {
-    const ref = database.ref('counter');
-    ref.once('value').then(snapshot => {
-      const value = snapshot.val();
-      if (value !== null) {
-        count = value;
-        counterDisplay.textContent = count;
-      }
-    });
+    // const ref = database.ref('counter');
+    // ref.once('value').then(snapshot => {
+    //   const value = snapshot.val();
+    //   if (value !== null) {
+     //    count = value;
+     //    counterDisplay.textContent = count;
+    //   }
+    // });
 
     // For Firestore:
+    counterRef.update({counter: count });
     // db.collection('counter').doc('counterValue').get().then((doc) => {
     //   if (doc.exists) {
     //     count = doc.data().value;
